@@ -1,8 +1,0 @@
-#! /usr/bin/env bash
-
-notebook=$(basename "$1" .enex)
-mkdir -p "out/$notebook"
-
-xsltproc enex-pdf.xslt "$1" | xq . >"out/$notebook/pdfs.json"
-
-node save-pdfs.js "out/$notebook/pdfs.json"
