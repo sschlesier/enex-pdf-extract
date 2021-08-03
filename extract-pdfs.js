@@ -2,6 +2,9 @@ const fs = require("fs");
 const path = require("path");
 const XmlStream = require("xml-stream");
 
+//run this on many enex files using a command like
+//parallel node extract-pdfs.js {} ::: $DESKTOP/export/done/*.enex
+
 const pathToEnex = process.argv[2];
 
 const notebookPath = path.join("out", path.basename(pathToEnex, ".enex"));
@@ -68,12 +71,3 @@ function makeOutputPath() {
 
   return result;
 }
-
-// if (data.pdfs && data.pdfs.pdf) {
-//   data.pdfs.pdf.forEach((element) => {
-//     const pdfPath = path.join(pdfDir, element.name); //todo deal with repeat filenames
-//     const buffer = Buffer.from(element.data, "base64");
-//     fs.writeFile(pdfPath, buffer, function (err) {});
-//     console.log("wrote " + pdfPath);
-//   });
-// }
