@@ -6,9 +6,11 @@ const data = JSON.parse(fs.readFileSync(dataFilePath));
 
 const pdfDir = path.dirname(dataFilePath);
 
-data.pdfs.pdf.forEach((element) => {
-  const pdfPath = path.join(pdfDir, element.name);
-  const buffer = Buffer.from(element.data, "base64");
-  fs.writeFile(pdfPath, buffer, function (err) {});
-  console.log("wrote " + pdfPath);
-});
+if (data.pdfs && data.pdfs.pdf) {
+  data.pdfs.pdf.forEach((element) => {
+    const pdfPath = path.join(pdfDir, element.name); //todo deal with repeat filenames
+    const buffer = Buffer.from(element.data, "base64");
+    fs.writeFile(pdfPath, buffer, function (err) {});
+    console.log("wrote " + pdfPath);
+  });
+}
