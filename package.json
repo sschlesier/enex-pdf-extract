@@ -1,0 +1,10 @@
+{
+  "name": "enex-pdf",
+  "private": true,
+  "description": "Extract pdfs from Evernote .enex files",
+  "version": "0.1.0",
+  "license": "0BSD",
+  "dependencies": {
+    "xml-stream": "^0.4.5"
+  }
+}
