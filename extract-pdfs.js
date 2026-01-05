@@ -24,7 +24,7 @@ parser.on("opentag", (node) => {
   elementStack.push(node.name);
   currentElement = node.name;
   currentText = "";
-  
+
   if (node.name === "note") {
     note = {};
   }
@@ -37,9 +37,16 @@ parser.on("text", (text) => {
 parser.on("closetag", (tagName) => {
   if (tagName === "note") {
     if (note.mime === "application/pdf") {
-      const outputPath = makeOutputPath();
-      console.log("dumping " + outputPath);
       const buffer = Buffer.from(note.data, "base64");
+      const outputPath = makeOutputPath(buffer.length);
+
+      if (outputPath === null) {
+        // File already exists with matching size, skip
+        note = {};
+        return;
+      }
+
+      console.log("dumping " + outputPath);
       fs.writeFile(outputPath, buffer, function (err) {});
     }
     note = {};
@@ -56,7 +63,7 @@ parser.on("closetag", (tagName) => {
   } else if (tagName === "mime") {
     note.mime = currentText;
   }
-  
+
   elementStack.pop();
   currentElement = elementStack.length > 0 ? elementStack[elementStack.length - 1] : null;
   currentText = "";
@@ -64,7 +71,7 @@ parser.on("closetag", (tagName) => {
 
 textStream.pipe(parser);
 
-function makeOutputPath() {
+function makeOutputPath(bufferSize) {
   var ext = path.extname(note.fileName);
   if (!ext) {
     // console.log("adding pdf to " + note.fileName);
@@ -73,10 +80,28 @@ function makeOutputPath() {
   const name = path.basename(note.fileName, ext);
 
   var result = path.join(notebookPath, name + ext);
-  var cnt = 1;
-  while (fs.existsSync(result)) {
-    // console.log("*** deconflicting file ***");
+
+  // Check if base path exists with matching size
+  if (fs.existsSync(result)) {
+    const stats = fs.statSync(result);
+    if (stats.size === bufferSize) {
+      console.log("skipping " + result + " (already exists with matching size)");
+      return null;
+    }
+    // Base path exists but size doesn't match, need to find alternative
+    var cnt = 1;
     result = path.join(notebookPath, name + " (" + cnt + ")" + ext);
+    while (fs.existsSync(result)) {
+      // Check if this conflicted path has matching size
+      const stats = fs.statSync(result);
+      if (stats.size === bufferSize) {
+        console.log("skipping " + result + " (already exists with matching size)");
+        return null;
+      }
+      // console.log("*** deconflicting file ***");
+      cnt++;
+      result = path.join(notebookPath, name + " (" + cnt + ")" + ext);
+    }
   }
 
   return result;
